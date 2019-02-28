@@ -19,17 +19,21 @@ end
 post('/login') do
     db = SQLite3::Database.new("db/dbsave.db")
     db.results_as_hash = true
-    result = db.execute("SELECT password, username FROM users WHERE username = (?)", params["username"])
-
-    if params["username"] == result[0]["username"]
-        if params["password"] == result[0]["password"]
+    result = db.execute("SELECT username, password FROM users WHERE username = ?", params["username"])
+    if result.length > 0
+        banan = result[0]
+    else
+        banan = [[]]
+    end
+    if params["username"] == banan[0]
+        if params["password"] == banan[1]
         redirect('/welcome')
         
         else 
-            redirect('/no_access')
+            redirect('/login')
         end
     else
-    redirect('/no_access')
+    redirect('/login')
     end
     session[:username] = params["username"]
 end
