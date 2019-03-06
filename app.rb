@@ -38,7 +38,7 @@ post('/login') do
     session[:username] = params["username"]
 end
 
-post('/create') do #JUUUSTERA!!!
+post('/create') do
     #ansluta till DB
     db = SQLite3::Database.new("db/dbsave.db")
     db.results_as_hash = true
@@ -54,3 +54,4 @@ post('/create') do #JUUUSTERA!!!
     #Redirect till anann GET
     redirect('/')
 end
+
