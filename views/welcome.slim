@@ -1,2 +1,22 @@
-h1 Your Profile
+h1 Welcome 
 
+
+#KANSKE vette faaan
+div class="wrapper"
+    section class="articles"
+        - users.each do |user|    
+            article
+                div class="controls"
+                    a href="/users/#{user["id"]}"
+                        i class="material-icons" visibility
+                    a href="/users/#{user["id"]}/edit"
+                        i class="material-icons" edit
+                    form action="users/#{user["id"]}/delete" method="post"  
+                        button type="submit"
+                            i class="material-icons" delete
+                div class="profile-img"
+                div class="info"
+                    label class="name" = user["name"]
+                    label class="email" = user["email"]
+                    label class="tel" = user["tel"]
+                    label class="department" = user["title"]
