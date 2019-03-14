@@ -3,7 +3,7 @@ require 'sqlite3'
 require 'slim'
 require 'byebug'
 require 'BCrypt'
-enable :session
+enable :sessions
 
 get('/') do
     slim(:index)
@@ -25,19 +25,21 @@ get('/profile/:id') do
     if session[:loggedin] == true
     slim(:profile)
     else
-        redirect('login')
+        redirect('/login')
     end
 end
 
 post('/login') do
     db = SQLite3::Database.new("db/dbsave.db")
     db.results_as_hash = true
-    result = db.execute("SELECT username, password FROM users WHERE username = ?", params["username"])
+    result = db.execute("SELECT username, password, id FROM users WHERE username = ?", params["username"])
     if result.length > 0 && BCrypt::Password.new(result.first["password"]) == params["password"]
         session[:username] = result.first["username"]
         session[:id] = result.first["id"]
+        p result
         session[:loggedin] = true
-        redirect('/profile')
+        p  session[:id]
+        redirect("/profile/#{session[:id]}")
     else 
         redirect('/')
     end
@@ -53,47 +55,31 @@ post('/create') do
 end
 
 #List Posts
-get('/welcome') do
-    db = SQLite3::Database.new("db/users.db")
+get('/profile') do
+    db = SQLite3::Database.new("db/dbsave.db")
     db.results_as_hash = true
 
-     result = db.execute("SELECT users.name, users.email, users.tel, departments.title, users.id from users INNER JOIN departments on users.department_id = departments.id ")
+     result = db.execute("SELECT blogg.Title, blogg.Date, blogg.Text, blogg.Id, from blogg")
 
      slim(:users, locals:{ users: result})
 end
 
 #CREATE
-post('/users2') do
+post('/blogg_create') do
     #ansluta till DB
-    db = SQLite3::Database.new("db/users.db")
+    db = SQLite3::Database.new("db/dbsave.db")
     db.results_as_hash = true
 
     # Plocka upp parametrarna ifrån formuläret
-    new_name = params["name"]
-    new_email = params["email"]
-    new_tel = params["tel"]
-    new_department = params["department"]
+    new_Title = params["Title"]
+    new_Text = params["Text"]
+    new_Date = params["Date"]
 
     # Skicka iväg till databsen med SQL
-    department_nummer = db.execute("SELECT id FROM departments WHERE title=?", new_department)
-    department_nummer = department_nummer.first["id"] #Ger oss siffran 1 (id)
-
-    # Skicka iväg till databsen med SQL
-    db.execute("INSERT INTO users (name,email,tel,department_id) VALUES (?,?,?,?)",new_name,new_email,new_tel,department_nummer)
+    db.execute("INSERT INTO blogg (Title,Text,Date,) VALUES (?,?,?)",new_Title,new_Text,new_Date)
 
     #Redirect till anann GET
-    redirect('/')
-end
-
-#Visible
-get('/users/:id') do
-    db = SQLite3::Database.new("db/users.db")
-    db.results_as_hash = true
-
-    user_id = params["id"]
-
-    result = db.execute("SELECT users.name, users.email, users.tel, departments.title, users.id FROM users INNER JOIN departments ON users.department_id = departments.id WHERE users.id = ?", user_id)
-    slim(:seperate_user, locals:{users: result})
+    redirect('/profile')
 end
 
 #EDIT USERS
